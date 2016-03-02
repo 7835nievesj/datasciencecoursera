@@ -19,10 +19,10 @@ best <- function(state, outcome) {
         data <- read.csv("outcome-of-care-measures.csv", colClasses = "character")
         
         ## Check that state and outcome are valid
-        validOutcome = c("heart attack","heart failure","pneumonia")
+        validOutcome <- c("heart attack","heart failure","pneumonia")
         if (!outcome %in% validOutcome) { stop("invalid outcome")}
         
-        validState = unique(data[,7])
+        validState <- unique(data[,7])
         if (!state %in% validState) stop("invalid state")
         
         ## convert outcome name into column name
@@ -50,10 +50,10 @@ rankhospital <- function(state, outcome, num = "best") {
         data <- read.csv("outcome-of-care-measures.csv", colClasses = "character")
         
         ## Check that state and outcome are valid
-        validOutcome = c("heart attack","heart failure","pneumonia")
+        validOutcome <- c("heart attack","heart failure","pneumonia")
         if (!outcome %in% validOutcome) { stop("invalid outcome")}
         
-        validState = unique(data[,7])
+        validState <- unique(data[,7])
         if (!state %in% validState) stop("invalid state")
         
         ## convert outcome name into column name
@@ -94,16 +94,16 @@ rankhospital <- function(state, outcome, num = "best") {
 ##  have data on a particular outcome should be excluded from the set of hospitals 
 ##  when deciding the rankings.
 
-rankall <- function(outcome, num = "best") {
+rankall <- function(outcome, num = "best", state = validState) {
         ## Read outcome data
         data <- read.csv("outcome-of-care-measures.csv",colClasses = "character",
                          na.strings="Not Available")
         
         ## Check that state and outcome are valid
-        validOutcome = c("heart attack","heart failure","pneumonia")
+        validOutcome <- c("heart attack","heart failure","pneumonia")
         if (!outcome %in% validOutcome) { stop("invalid outcome")}
         
-        validState = sort(unique(data[,7]))
+        validState <- sort(unique(data[,7]))
         if (!state %in% validState) stop("invalid state")
         
         ## convert outcome name into column name
@@ -134,5 +134,3 @@ rankall <- function(outcome, num = "best") {
         ## Return a data frame with the hospital names and the (abbreviated) state name
         data.frame(hospital=hospital,state=validState,row.names=validState)
 }
-
-
