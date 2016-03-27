@@ -25,11 +25,14 @@ https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Datas
 
 ####Part 1 - Merges the training and the test sets to create one data set
 
-The first step was to set the working directory were the project data sets were stored and download each into R. 
+The first step was to set the working directory were the project data sets were stored and download each into R. An individual data frame was made for the X_train and X_test data sets using cbind() to add the columns of subject_train/test and y_train/test. The data frames were named train_df and test_df. Finally, both dataframes were merged using rbind() into a dataframe named trainTest.df1. 
 ```{r}
 
-setwd("~/Documents/Class_2016/Data.Scientist.Coursera/
-      GitHub.Coursera/Getting and Cleaning Data/UCI HAR Dataset")
+# Set working directory
+setwd("~/Documents/Class_2016/Data.Scientist.Coursera/GitHub.Coursera/
+      Getting and Cleaning Data/UCI HAR Dataset")
+
+# PART 1. Merges the training and the test sets to create one data set.
 
 # Read TRAIN files
 X_train <- read.csv("./train/X_train.txt", 
@@ -38,12 +41,11 @@ X_train <- read.csv("./train/X_train.txt",
                     colClasses = "numeric",
                     comment.char = "")
 
-y_train <- read.csv("./train/y_train.txt", 
-                    header = FALSE, 
-                    sep = "")
-subject_train <- read.csv("./train/subject_train.txt",
-                          header = FALSE, 
-                          sep = "")
+y_train <- read.csv("./train/y_train.txt", header = FALSE, sep = "")
+subject_train <- read.csv("./train/subject_train.txt", header = FALSE, sep = "")
+
+# Prepare X_train data frame
+train_df <- cbind(subject_train,y_train,X_train)
 
 # Read TEST files
 X_test <- read.csv("./test/X_test.txt", 
@@ -52,33 +54,66 @@ X_test <- read.csv("./test/X_test.txt",
                    colClasses = "numeric",
                    comment.char = "")
 
-y_test <- read.csv("./test/y_test.txt",
-                   header = FALSE, 
-                   sep = "")
-subject_test <- read.csv("./test/subject_test.txt",
-                         header = FALSE,
-                         sep = "")
-```
+y_test <- read.csv("./test/y_test.txt", header = FALSE, sep = "")
+subject_test <- read.csv("./test/subject_test.txt", header = FALSE, sep = "")
 
+# Prepare X_test data frame
+test_df <- cbind(subject_test,y_test,X_test)
 
-The second step was to use the variable names listes in features.txt to create a vector of names. Then the Xtrain and Xtest datasets were merged using rbind, since both had equal columns. Finally, the features.names vector was used to name each variable of the merged datasets. 
-```{r}
-# use features.txt to assign variable names
-features <- read.csv("features.txt", header = FALSE, sep = "")
-features.names <- as.character(features[,2])
-
-# Merge data sets and assign variable names
-merge.data <- rbind(X_train, X_test)
-colnames(merge.data) <- features.names
+# Merge data sets 
+trainTest.df1 <- rbind(train_df,test_df)
 ```
 
 ####Part 2 - Extracts only the measurements on the mean and standard deviation for each measurement
 
+The first step was to download the features.txt, only reading the second column, to use as vector for the variable names; it was stored as varNames, and the values were changed to characters. Using grep() the values with "mean" and "std" (standard deviation) were extracted and stored in meanSTD.col, because these values dont't count for the first two columns in the trainTest.df1 all the values were summed by 2. A second dataframe named trainTest.df2, only containing variables containing "mean" and "std", was made selecting the first two columns from trainTest.df1 and the values stored in meanSTD.col
+```{r}
+# PART 2. Extracts only the measurements on the mean and standard deviation for each measurement.
+
+# use features.txt to identify variable names
+features <- read.csv("features.txt", header = FALSE, sep = "")[,2]
+varNames <- as.character(features)
+
+# Identify the variable names that include "mean" and "std" (standard deviation)
+meanSTD.col <- grep("mean|std", varNames) + 2 # moves values 2 spaces to count for first two columns in trainTest.df1
+
+# Extract columns with mean and std values from merged data frame
+trainTest.df2 <- trainTest.df1[ , c(1,2,meanSTD.col)]
+```
 
 ####Part 3 - Uses descriptive activity names to name the activities in the data set
 
+The first step was to download the activity_labels.txt, naming the columns "activityID" and "activityName". The "activityName"" column values were changed to factors and stored in a vector named activityNames. To change the values in the activities column of trainTest.df2 the levels of the second column were changed using the vector activityNames. 
+```{r}
+# PART 3.  Uses descriptive activity names to name the activities in the data set
+
+# Read activity labels
+activitylabels <- read.table("./activity_labels.txt",
+                             col.names=c("activityId","activityName"))
+# Set activityID as factor  
+trainTest.df2[,2] <- factor(trainTest.df2[,2])
+
+# Set levels for activityID with activityName
+activityNames <- activitylabels$activityName
+levels(trainTest.df2[,2]) <- activityNames
+```
 
 ####Part 4 - Appropriately labels the data set with descriptive variable names
 
+Using grep() in the varNames vector taken from the features.txt in Part 2, the names containing "mean" and "std" were stored in meanSTD.names by setting the value = TRUE. To label the variables in trainTest.df2 colnames() was used, naming the first two columns "subjectID" and "activityName", and the rest with meanSTD.names. 
+```{r}
+# PART 4.  Appropriately labels the data set with descriptive variable names.
+meanSTD.names <- grep("mean|std", varNames, value = TRUE)
+colnames(trainTest.df2) <- c("subjectID","activityName", meanSTD.names)
+```
 
 ####Part 5 - From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject
+
+The first step was to use the package "reshape2". The trainTest.df2 was reshaped using melt() and id = c("subjectID,activityName"), and named melt.df. Then the average of each variable in melt.df was obtained using dcast() and fun.aggregate = mean. A file named tidy_df.txt was created with write.table().
+```{r}
+# PART 5.  From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.
+library(reshape2)
+melt.df <- melt(trainTest.df2, id = c("subjectID","activityName")) 
+tidy.df <- dcast(melt.df, subjectID + activityName ~ variable,fun.aggregate = mean)
+write.table(tidy.df, file = "tidy_df.txt", row.names = FALSE)
+```
