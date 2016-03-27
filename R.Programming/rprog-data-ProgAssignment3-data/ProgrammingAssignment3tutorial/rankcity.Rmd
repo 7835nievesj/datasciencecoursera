@@ -1,0 +1,53 @@
+---
+title: "Ranking ordered data tutorial"
+author: "Jose Nieves"
+date: "March 1, 2016"
+output: html_document
+---
+
+#How to return a specific ranking after ordering
+
+Working on cities.csv, we want to know what's the __second biggest city in our UK database__. We are not interested in an ordered data frame, we just want to know the name of the city.
+
+```{r}
+data <- read.csv("cities.csv")
+data
+class(data)
+```
+
+#### __argument decreasing = TRUE__ inverts the direction of the order. Numbers from biggest to smallest and characters from Z to A. This is helpful when we consider rank1 the biggest city.
+#### __as.character ( )__ will return the vector with the name of the city. If we just return orderdata[rank,1] we get a factor instead.
+
+```{r}
+find_city_rank <- function(data,column,rank){
+    orderdata <- data[order(decreasing = TRUE,data[,column]),]
+    return(as.character(orderdata[rank,1]))
+}
+```
+
+##Examples:
+
+```{r}
+find_city_rank (data,3,1)
+find_city_rank (data,3,2)
+find_city_rank (data,4,2)
+```
+
+Now let's consider the case in which we __don't know the length of the csv file and we just want to get the last city in the ranking.__
+
+####__nrow( )__ returns the number of rows of a data frame. We use this function to determine the index of the last item.
+
+```{r}
+find_last_city <- function(data,column){
+    orderdata <- data[order(decreasing = TRUE,data[,column]),]
+    return(as.character(orderdata[nrow(orderdata),1]))
+}
+```
+
+##Examples:
+```{r}
+find_last_city (data,3)
+find_last_city (data,1)
+```
+####__Note:__ that in the last example Beijing it's the last in alphabetical ranking. This is because decreasing = TRUE.
+

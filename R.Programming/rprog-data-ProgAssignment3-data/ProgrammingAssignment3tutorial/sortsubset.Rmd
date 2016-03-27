@@ -1,0 +1,43 @@
+---
+title: "Subsetting tutorial"
+author: "Jose Nieves"
+date: "March 1, 2016"
+output: html_document
+---
+
+#How to order only a specific subset of a data frame
+Let's read cities.csv.
+```{r}
+data <- read.csv("cities.csv")
+data
+class(data)
+```
+If our purpose is to see what is the __largest city in China between Shanghai and Beijing__, we might be not interested in the other cities'areas. 
+
+To do so we subset our initial data frame, and then we order it considering the criteria we prefer. It doesn't make much sense with 2 items, but when we are analysing thousands of items it's far more useful.
+
+### __grep( )__ finds the character vector (e.g. "China") in the data$countries factor, and returns a vector of indexes.
+```{r}
+data$countries
+  
+grep("China",data$countries)
+
+## We then subset the main data frame, data, by these indexes
+
+data [grep("China",data$countries),]
+```
+
+```{r}
+sort_country <- function (data, country, column){
+  countrydata <- data [grep(country,data$countries),]
+  orderdata <- countrydata[order(countrydata[,column]),]
+  return (orderdata)
+}
+```
+
+##Examples:
+
+```{r}
+sort_country(data, "USA", 4)
+```
+  

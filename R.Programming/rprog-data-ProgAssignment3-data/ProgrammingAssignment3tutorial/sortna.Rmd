@@ -1,0 +1,69 @@
+---
+title: "Order data frames with NA's tutorial"
+author: "Jose Nieves"
+date: "March 1, 2016"
+output: html_document
+---
+
+# How to manage NA when ordering data frames
+
+Let's read citiesNA.csv file
+
+```{r}
+data <- read.csv("citiesNA.csv")
+data
+class(data)
+```    
+
+In this case we have some character data in the areakm2 and populationk that we want to consider as NA.
+
+Below is the function to order the data frame by column, that considers only complete rows with no NA values.
+
+This means that we will exclude NYC and London form our data frame.
+
+##Subsetting data by column, we get a factor:
+```{r}
+class(data[,2])
+```
+## One way to extract a vector from the factor is by subsetting it by its levels.
+###__levels(data[,2])__ returns a vector of the levels:
+```{r}
+levels(data[,2])
+```
+
+###__levels(data[,2])[data[,2]]__ returns a vector with the content of [data[,2]]
+
+```{r}
+levels(data[,2])[data[,2]]
+```
+
+###__data[,2]__ would return a factor, that for our purposes is harder to handle
+
+```{r}
+data[,2]
+```    
+
+__SuppressWarnings()__ stops the warning alerts from R. When we coerce a mixed list of numeric and character into a numeric vector, text becomes automatically NA, but it's a forced coercion and R sends a warning. This is the case of our column 3 and 4, where "Unknown" becomes NA.
+
+__complete.cases()__ returns the indexes of the rows that don't have any NA. By subsetting the matrix by these indexes we get a data frame with only complete cases.
+```{r}
+sort_by_column_NA <- function(data,column) {
+        for (i in 3:4){
+                 data[,i] <- suppressWarnings(as.numeric(levels(data[,i])[data[,i]]))
+        }
+        orderdata <- data[order(data[,column]),]
+        orderdata <- orderdata[complete.cases(orderdata),] 
+        return(orderdata)
+}
+```
+
+##Examples:
+
+```{r}
+sort_by_column_NA(data,3)
+```
+       
+```{r}
+sort_by_column_NA(data,1)
+```
+       

@@ -1,0 +1,62 @@
+---
+title: "Order data frames tutorial"
+author: "Jose Nieves"
+date: "February 29, 2016"
+output: html_document
+---
+
+# How to order a data frame by the values in its columns
+
+Let's read first the cities.csv file
+```{r}
+data <- read.csv("cities.csv")
+data
+class(data)
+```
+
+As we can see data is a data.frame with 6 rows and 4 columns, both character and numeric.
+
+Below is the function to order the data frame by column:
+
+orderdata: output data.frame with the ordered rows
+__order()__: sort by default in decreasing order the values.
+
+In case of numbers from the smallest to the biggest, in case of characters from A to Z. 
+
+####This function returns a vector of indexes with the ordered rows. 
+```{r}
+order(data[,1])
+```
+
+####__data[order(),]__ subsets the data frame using the indexes above
+
+```{r}
+sort_by_column <- function (data, column){
+        orderdata <- data[order(data[,column]),]
+        return(orderdata)
+}
+```
+
+##Examples:
+
+```{r}
+sort_by_column (data,1)
+sort_by_column (data,3)
+```
+
+####In case of __tie__, we might consider to give a second attribute to order() to give a second criteria
+
+```{r}
+sort_by_columns <- function (data, col1, col2){
+        orderdata <- data[order(data[,col1],data[,col2]),]
+        return(orderdata)
+}
+```
+
+##Examples:
+
+```{r}
+sort_by_columns (data,2,3)
+sort_by_columns (data,2,1)
+```	
+
